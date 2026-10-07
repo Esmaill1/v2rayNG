@@ -87,6 +87,7 @@ jobs:
         java-version: '21'
 
     - name: Decode Keystore
+      if: ${{ secrets.APP_KEYSTORE_BASE64 != '' }}
       uses: timheuer/base64-to-file@v2.0.0
       id: android_keystore
       with:
@@ -98,41 +99,52 @@ jobs:
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
         chmod 755 gradlew
-        ./gradlew licenseFdroidReleaseReport
-        ./gradlew assembleRelease -Pandroid.injected.signing.store.file=${{ steps.android_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.APP_KEYSTORE_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.APP_KEYSTORE_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.APP_KEY_PASSWORD }}
+        if [ -n "${{ secrets.APP_KEYSTORE_BASE64 }}" ]; then
+          ./gradlew licenseFdroidReleaseReport
+          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=${{ steps.android_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.APP_KEYSTORE_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.APP_KEYSTORE_ALIAS }} -Pandroid.injected.signing.key.password=${{ secrets.APP_KEY_PASSWORD }}
+        else
+          ./gradlew assemblePlaystoreDebug
+        fi
     
     - name: Upload arm64-v8a APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: ${{  success() && secrets.APP_KEYSTORE_BASE64 != '' }}
       with:
         name: arm64-v8a
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*arm64-v8a*.apk
 
     - name: Upload armeabi-v7a APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: ${{  success() && secrets.APP_KEYSTORE_BASE64 != '' }}
       with:
         name: armeabi-v7a
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*armeabi-v7a*.apk
 
     - name: Upload x86 APK
       uses: actions/upload-artifact@v7
-      if: ${{  success() }}
+      if: ${{  success() && secrets.APP_KEYSTORE_BASE64 != '' }}
       with:
         name: x86-apk
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*x86*.apk
 
     - name: Upload universal APK
       uses: actions/upload-artifact@v7
-      if: ${{ success() }}
+      if: ${{ success() && secrets.APP_KEYSTORE_BASE64 != '' }}
       with:
         name: universal-apk
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/release/*universal*.apk
 
+    - name: Upload APKs
+      uses: actions/upload-artifact@v7
+      if: ${{ success() && secrets.APP_KEYSTORE_BASE64 == '' }}
+      with:
+        name: v2rayNG-apks
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/**/*.apk
+
   sign-and-release:
     needs: build
     runs-on: ubuntu-26.04
-    if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
+    if: github.event_name == 'workflow_dispatch' && inputs.release_tag != '' && secrets.GPG_PRIVATE_KEY != ''
 
     steps:
       - name: Download APK artifacts
