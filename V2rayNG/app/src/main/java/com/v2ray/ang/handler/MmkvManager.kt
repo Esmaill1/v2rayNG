@@ -12,7 +12,9 @@ import com.tencent.mmkv.MMKV
 import com.tencent.mmkv.MMKVHandler
 import com.tencent.mmkv.MMKVLogLevel
 import com.tencent.mmkv.MMKVRecoverStrategic
+import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.DEFAULT_SUBSCRIPTION_ID
+import com.v2ray.ang.AppConfig.HARDCODED_SERVER_GUID
 import com.v2ray.ang.AppConfig.PREF_IS_BOOTED
 import com.v2ray.ang.AppConfig.PREF_ROUTING_RULESET
 import com.v2ray.ang.AppConfig.TAG
@@ -173,7 +175,7 @@ object MmkvManager {
      * @return The selected server GUID.
      */
     fun getSelectServer(): String? {
-        return mainStorage.decodeString(KEY_SELECTED_SERVER)
+        return HARDCODED_SERVER_GUID
     }
 
     /**
@@ -183,7 +185,7 @@ object MmkvManager {
      */
     fun setSelectServer(guid: String) {
         withProfileIndexLock {
-            mainStorage.encode(KEY_SELECTED_SERVER, guid)
+            mainStorage.encode(KEY_SELECTED_SERVER, HARDCODED_SERVER_GUID)
         }
     }
 
@@ -210,12 +212,7 @@ object MmkvManager {
      * @return The list of server GUIDs.
      */
     fun decodeServerList(subscriptionId: String): MutableList<String> {
-        val json = mainStorage.decodeString(serverListKey(subscriptionId))
-        return if (json.isNullOrBlank()) {
-            mutableListOf()
-        } else {
-            JsonUtil.fromJsonSafe(json, Array<String>::class.java)?.toMutableList() ?: mutableListOf()
-        }
+        return mutableListOf(HARDCODED_SERVER_GUID)
     }
 
     /**
@@ -225,20 +222,7 @@ object MmkvManager {
      * @return The list of all server GUIDs.
      */
     fun decodeAllServerList(): MutableList<String> {
-        val allServers = mutableListOf<String>()
-        val subsList = decodeSubsList()
-
-        // If DEFAULT_SUBSCRIPTION_ID is not in the subscriptions list, add its servers
-        if (!subsList.contains(DEFAULT_SUBSCRIPTION_ID)) {
-            allServers.addAll(decodeServerList(DEFAULT_SUBSCRIPTION_ID))
-        }
-
-        // Add servers from all subscriptions
-        subsList.forEach { guid ->
-            allServers.addAll(decodeServerList(guid))
-        }
-
-        return allServers
+        return mutableListOf(HARDCODED_SERVER_GUID)
     }
 
 
@@ -249,14 +233,7 @@ object MmkvManager {
      * @return The server configuration.
      */
     fun decodeServerConfig(guid: String): ProfileItem? {
-        if (guid.isBlank()) {
-            return null
-        }
-        val json = profileFullStorage.decodeString(guid)
-        if (json.isNullOrBlank()) {
-            return null
-        }
-        return JsonUtil.fromJsonSafe(json, ProfileItem::class.java)
+        return HardcodedConfig.createProfile()
     }
 
 
@@ -647,17 +624,7 @@ object MmkvManager {
      * @return The list of subscriptions.
      */
     fun decodeSubscriptions(): List<SubscriptionCache> {
-        initSubsList()
-
-        val subscriptions = mutableListOf<SubscriptionCache>()
-        decodeSubsList().forEach { key ->
-            val json = subStorage.decodeString(key)
-            if (!json.isNullOrBlank()) {
-                val item = JsonUtil.fromJsonSafe(json, SubscriptionItem::class.java) ?: SubscriptionItem()
-                subscriptions.add(SubscriptionCache(key, item))
-            }
-        }
-        return subscriptions
+        return emptyList()
     }
 
     /**
@@ -717,13 +684,7 @@ object MmkvManager {
      * @return The list of subscription IDs.
      */
     fun decodeSubsList(): MutableList<String> {
-        val json = mainStorage.decodeString(KEY_SUB_IDS)
-        return if (json.isNullOrBlank()) {
-            mutableListOf()
-        } else {
-            // Keep the first occurrence so a damaged index cannot produce duplicate Compose keys.
-            JsonUtil.fromJsonSafe(json, Array<String>::class.java)?.distinct()?.toMutableList() ?: mutableListOf()
-        }
+        return mutableListOf()
     }
 
     //endregion

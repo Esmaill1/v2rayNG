@@ -19,6 +19,10 @@ object AppConfig {
     // Default subscription ID for ungrouped servers
     const val DEFAULT_SUBSCRIPTION_ID = "__default_subscription__"
 
+    const val HARDCODED_SERVER_GUID = "hardcoded_vless_server"
+    const val HARDCODED_VLESS_URL =
+        "vless://58dceae9-b361-4b88-bf14-04661dc8aee4@de-2.toxicnet.top:28394?security=reality&sni=ea.com&fp=random&pbk=Y3jq8s1mgrqg6HGKzUh64OtolQNMRMRg18CPVmYZmEc&sid=6ebb2d5b12c735&spx=/&type=tcp&encryption=none"
+
     /** Preferences mapped to MMKV storage. */
     const val PREF_SNIFFING_ENABLED = "pref_sniffing_enabled"
     const val PREF_ROUTE_ONLY_ENABLED = "pref_route_only_enabled"
