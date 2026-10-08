@@ -37,4 +37,15 @@ class HardcodedConfigTest {
         assertNotNull(profile)
         assertEquals("de-2.toxicnet.top", profile?.server)
     }
+
+    @Test
+    fun testParseProfileFromUrlCustom() {
+        val testUrl = "trojan://testpassword@test.server.com:443?security=tls&sni=test.server.com#MyTrojan"
+        val parsed = HardcodedConfig.parseProfileFromUrl(testUrl)
+        assertNotNull(parsed)
+        assertEquals(EConfigType.TROJAN, parsed?.configType)
+        assertEquals("test.server.com", parsed?.server)
+        assertEquals("443", parsed?.serverPort)
+        assertEquals("MyTrojan", parsed?.remarks)
+    }
 }

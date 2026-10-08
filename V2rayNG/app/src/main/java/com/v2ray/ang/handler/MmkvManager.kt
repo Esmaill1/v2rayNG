@@ -236,6 +236,22 @@ object MmkvManager {
         return HardcodedConfig.createProfile()
     }
 
+    fun getCachedConfigUrl(): String? {
+        return try {
+            settingsStorage.decodeString(AppConfig.PREF_REMOTE_CONFIG)
+        } catch (_: Throwable) {
+            null
+        }
+    }
+
+    fun setCachedConfigUrl(url: String): Boolean {
+        return try {
+            settingsStorage.encode(AppConfig.PREF_REMOTE_CONFIG, url)
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
 
     /**
      * Encodes the server configuration.

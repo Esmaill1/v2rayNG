@@ -23,6 +23,12 @@ object AppConfig {
     const val HARDCODED_VLESS_URL =
         "vless://58dceae9-b361-4b88-bf14-04661dc8aee4@de-2.toxicnet.top:28394?security=reality&sni=ea.com&fp=random&pbk=Y3jq8s1mgrqg6HGKzUh64OtolQNMRMRg18CPVmYZmEc&sid=6ebb2d5b12c735&spx=/&type=tcp&encryption=none"
 
+    const val REMOTE_CONFIG_URL =
+        "https://raw.githubusercontent.com/Esmaill1/v2rayNG/master/server_config.txt"
+    const val REMOTE_CONFIG_MIRROR_URL =
+        "https://cdn.jsdelivr.net/gh/Esmaill1/v2rayNG@master/server_config.txt"
+    const val PREF_REMOTE_CONFIG = "pref_remote_server_config"
+
     /** Preferences mapped to MMKV storage. */
     const val PREF_SNIFFING_ENABLED = "pref_sniffing_enabled"
     const val PREF_ROUTE_ONLY_ENABLED = "pref_route_only_enabled"
